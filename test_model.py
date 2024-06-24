@@ -1,6 +1,8 @@
 from datetime import date, timedelta
 import pytest
 
+from model import Batch, OrderLine
+
 # from model import ...
 
 today = date.today()
@@ -21,7 +23,7 @@ def make_batch_and_order_line(
 def test_allocating_to_a_batch_reduces_the_available_quantity():
     batch, line = make_batch_and_order_line("sofa", 30, 20)
     batch.allocate(line)
-    assert batch.available_quantity == 10
+    assert batch.available_qty == 10
     pytest.fail("todo")
 
 
@@ -53,5 +55,12 @@ def test_prefers_warehouse_batches_to_shipments():
 
 
 def test_prefers_earlier_batches():
-    early = 
+    early_batch = Batch("batch-w", "sofa", 20, eta=today-timedelta(days=10))
+    today_batch = Batch("batch-s", "sofa", 20, eta=today)
+    late_batch = Batch("batch-w", "sofa", 20, eta=today+timedelta(days=10))
+    line = OrderLine("line-1", "sofa", 8)
+    allocate(line, [early_batch, today_batch, late_batch])
+    assert early_batch.availabe_qty == 12
+    assert today_batch.available_qty == 20
+    assert late_batch.available_qty == 20
     pytest.fail("todo")
